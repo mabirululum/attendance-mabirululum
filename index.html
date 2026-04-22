@@ -91,9 +91,13 @@
                     <div class="flex gap-2">
                         <!-- Tambahan Tombol Cetak Semua QR -->
                         <button onclick="cetakSemuaIDCard()" class="bg-indigo-600 text-white px-3 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2 shadow-sm text-sm font-medium transition"><i class="ph ph-printer"></i> Cetak Semua QR</button>
-                        
+                        <!-- Tambahan Tombol Hapus Semua Guru -->
+                        <button onclick="deleteAllGuru()" class="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 flex items-center gap-2 shadow-sm text-sm font-medium transition"><i class="ph ph-trash"></i> Hapus Semua</button>
+                        <!-- Tambahan Tombol Unduh Template -->
                         <button onclick="downloadTemplateGuru()" class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 flex items-center gap-2 shadow-sm text-sm font-medium transition"><i class="ph ph-download-simple"></i> Template</button>
+                        <!-- Tambahan Tombol Import -->
                         <button onclick="document.getElementById('importFile').click()" class="bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2 shadow-sm text-sm font-medium transition"><i class="ph ph-upload-simple"></i> Import</button>
+                        <!-- Tambahan Tombol Tambah Guru -->
                         <input type="file" id="importFile" class="hidden" accept=".xlsx, .xls, .csv" onchange="handleImportGuru(event)">
                         <button onclick="openModalGuru()" class="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 flex items-center gap-2 shadow-sm text-sm font-medium transition"><i class="ph ph-plus-circle"></i> Tambah Guru</button>
                     </div>
@@ -218,6 +222,42 @@
         </div>
     </div>
 
+    <!-- Modal Edit Guru -->
+    <div id="modalEditGuru" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50 no-print">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">Edit Data Guru</h3>
+                <button onclick="closeEditModal()" class="text-gray-500 hover:text-red-500"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <form onsubmit="updateGuru(event)">
+                <input type="hidden" id="editGuruId">
+                <div class="grid grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">NIP</label>
+                        <input type="text" id="editGuruNip" required class="w-full border border-gray-300 rounded p-2 focus:ring focus:ring-blue-200 bg-gray-100" readonly title="NIP tidak dapat diubah">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Nama Lengkap</label>
+                        <input type="text" id="editGuruNama" required class="w-full border border-gray-300 rounded p-2 focus:ring focus:ring-blue-200">
+                    </div>
+                </div>
+                
+                <div class="mb-5">
+                    <label class="block text-sm font-medium mb-2">Jadwal Mengajar (Kosongkan jika libur)</label>
+                    <div class="grid grid-cols-1 gap-2 text-sm max-h-[250px] overflow-y-auto pr-2">
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border"><span class="w-16 font-bold">Senin</span><input type="time" id="editJamSeninM" class="border rounded p-1 w-full" placeholder="Masuk"><span>-</span><input type="time" id="editJamSeninP" class="border rounded p-1 w-full" placeholder="Pulang"></div>
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border"><span class="w-16 font-bold">Selasa</span><input type="time" id="editJamSelasaM" class="border rounded p-1 w-full"><span>-</span><input type="time" id="editJamSelasaP" class="border rounded p-1 w-full"></div>
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border"><span class="w-16 font-bold">Rabu</span><input type="time" id="editJamRabuM" class="border rounded p-1 w-full"><span>-</span><input type="time" id="editJamRabuP" class="border rounded p-1 w-full"></div>
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border"><span class="w-16 font-bold">Kamis</span><input type="time" id="editJamKamisM" class="border rounded p-1 w-full"><span>-</span><input type="time" id="editJamKamisP" class="border rounded p-1 w-full"></div>
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border"><span class="w-16 font-bold">Jumat</span><input type="time" id="editJamJumatM" class="border rounded p-1 w-full"><span>-</span><input type="time" id="editJamJumatP" class="border rounded p-1 w-full"></div>
+                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded border"><span class="w-16 font-bold">Sabtu</span><input type="time" id="editJamSabtuM" class="border rounded p-1 w-full"><span>-</span><input type="time" id="editJamSabtuP" class="border rounded p-1 w-full"></div>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-medium">Update Data</button>
+            </form>
+        </div>
+    </div>
+
     <div id="modalIzin" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50 no-print">
         <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
             <div class="flex justify-between items-center mb-4">
@@ -290,9 +330,6 @@
             <button onclick="closeModalQR()" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 w-full font-medium">Tutup</button>
         </div>
     </div>
-
-    <!-- <script src="js/app.js"></script> -->
-
     <script type="module" src="js/app.js"></script>
 </body>
 </html>

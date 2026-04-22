@@ -1,6 +1,6 @@
 // ================= AUTENTIKASI =================
 import { API_BASE_URL, state } from './state.js';
-import { speakVoice } from './utils.js';
+import { speakVoice, handleRouting } from './utils.js';
 
 export function handleLogin(e) {
     e.preventDefault();
@@ -27,7 +27,10 @@ export function handleLogin(e) {
             state.isLoggedIn = true;
             state.userRole = data.data.role; 
             Swal.fire({ icon: 'success', title: 'Login Berhasil!', timer: 1500, showConfirmButton: false })
-            .then(() => { window.location.hash = '#admin'; });
+            .then(() => { 
+                window.location.hash = '#admin';
+                handleRouting();
+            });
         } else {
             Swal.fire({ icon: 'error', title: 'Akses Ditolak', text: data.message });
         }

@@ -1,8 +1,8 @@
 // ================= ENTRY POINT UTAMA =================
 import { loadDatabaseData } from './api.js';
-import { updateClock, handleRouting, switchAdminTab, openModalGuru, closeModalGuru, closeModalQR, openModalUser, closeModalUser, closeModalIzin } from './utils.js';
+import { updateClock, handleRouting, switchAdminTab, openModalGuru, closeModalGuru, closeEditModal, closeModalQR, openModalUser, closeModalUser, closeModalIzin } from './utils.js';
 import { handleLogin, handleLogout } from './auth.js';
-import { renderGuru, saveGuru, deleteGuru, showQRCode, cetakIDCard, cetakSemuaIDCard, downloadTemplateGuru, handleImportGuru } from './teachers.js';
+import { renderGuru, saveGuru, openEditGuru, updateGuru, deleteAllGuru, deleteGuru, showQRCode, cetakIDCard, cetakSemuaIDCard, downloadTemplateGuru, handleImportGuru } from './teachers.js';
 import { renderUsers, saveUser, deleteUser } from './users.js';
 import { openModalIzin, saveIzin, renderAbsensi, changePage, exportToExcel } from './attendance.js';
 
@@ -20,14 +20,18 @@ window.switchAdminTab = switchAdminTab;
 // Ekpos Modal & Utilitas
 window.openModalGuru = openModalGuru;
 window.closeModalGuru = closeModalGuru;
+window.closeEditModal = closeEditModal;
 window.closeModalQR = closeModalQR;
 window.openModalUser = openModalUser;
 window.closeModalUser = closeModalUser;
 window.openModalIzin = openModalIzin;
 window.closeModalIzin = closeModalIzin;
 
-// Ekpos Aksi Guru
+// Ekpos Aksi Guru (Termasuk fitur baru edit & hapus semua)
 window.saveGuru = saveGuru;
+window.openEditGuru = openEditGuru;
+window.updateGuru = updateGuru;
+window.deleteAllGuru = deleteAllGuru;
 window.deleteGuru = deleteGuru;
 window.showQRCode = showQRCode;
 window.cetakIDCard = cetakIDCard;
@@ -48,7 +52,6 @@ window.renderAbsensi = renderAbsensi;
 // Ekpos Autentikasi
 window.handleLogin = handleLogin;
 window.handleLogout = handleLogout;
-
 
 // INISIALISASI SAAT HALAMAN DIMUAT
 document.addEventListener("DOMContentLoaded", () => {

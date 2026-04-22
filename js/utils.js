@@ -96,6 +96,7 @@ export function switchAdminTab(tabName) {
 // Modal Controllers
 export function openModalGuru() { document.getElementById('modalGuru').classList.remove('hidden'); }
 export function closeModalGuru() { document.getElementById('modalGuru').classList.add('hidden'); }
+export function closeEditModal() { document.getElementById('modalEditGuru').classList.add('hidden'); }
 export function closeModalQR() { document.getElementById('modalQR').classList.add('hidden'); }
 export function openModalUser() { 
     document.getElementById('modalUser').classList.remove('hidden'); 

@@ -1,6 +1,6 @@
 // ================= MANAJEMEN GURU =================
 import { API_BASE_URL, state, triggerRefresh } from './state.js';
-import { closeModalGuru } from './utils.js';
+import { closeModalGuru, closeEditModal } from './utils.js';
 
 export function renderGuru() {
     const tbody = document.getElementById('tableGuruBody');
@@ -27,6 +27,7 @@ export function renderGuru() {
                 <td class="p-3 font-medium align-top">${t.nama}</td>
                 <td class="p-3 min-w-[200px]">${jadwalBadges}</td>
                 <td class="p-3 text-center align-top flex justify-center gap-3">
+                    <button onclick="window.openEditGuru(${t.id})" class="text-amber-500 hover:text-amber-700" title="Edit Guru"><i class="ph ph-pencil-simple text-lg"></i></button>
                     <button onclick="window.showQRCode('${t.nama}', '${t.qr_code}')" class="text-blue-500 hover:text-blue-700"><i class="ph ph-qr-code text-lg"></i></button>
                     <button onclick="window.cetakIDCard(${t.id})" class="text-emerald-600 hover:text-emerald-800"><i class="ph ph-printer text-lg"></i></button>
                     <button onclick="window.deleteGuru(${t.id})" class="text-red-500 hover:text-red-700"><i class="ph ph-trash text-lg"></i></button>
@@ -64,6 +65,112 @@ export function saveGuru(e) {
             triggerRefresh(); 
             Swal.fire({ icon: 'success', title: 'Tersimpan!', text: 'Guru berhasil dimasukkan ke database.', timer: 2000, showConfirmButton: false });
         } else { Swal.fire('Error', data.message, 'error'); }
+    });
+}
+
+// FUNGSI BARU: Buka Edit Modal
+export function openEditGuru(id) {
+    const guru = state.mockTeachers.find(t => t.id == id);
+    if(!guru) return;
+
+    document.getElementById('editGuruId').value = guru.id;
+    document.getElementById('editGuruNip').value = guru.nip;
+    document.getElementById('editGuruNama').value = guru.nama;
+
+    ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].forEach(h => {
+        document.getElementById('editJam' + h + 'M').value = '';
+        document.getElementById('editJam' + h + 'P').value = '';
+    });
+
+    if (guru.jadwal) {
+        Object.keys(guru.jadwal).forEach(h => {
+            if (document.getElementById('editJam' + h + 'M')) {
+                document.getElementById('editJam' + h + 'M').value = guru.jadwal[h].masuk;
+                document.getElementById('editJam' + h + 'P').value = guru.jadwal[h].pulang;
+            }
+        });
+    }
+
+    document.getElementById('modalEditGuru').classList.remove('hidden');
+}
+
+// FUNGSI BARU: Update Guru ke Database
+export function updateGuru(e) {
+    e.preventDefault();
+    const id = document.getElementById('editGuruId').value;
+    const nama = document.getElementById('editGuruNama').value;
+    
+    const jadwal = {};
+    ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'].forEach(h => {
+        const m = document.getElementById('editJam' + h + 'M').value;
+        const p = document.getElementById('editJam' + h + 'P').value;
+        if(m && p) jadwal[h] = { masuk: m, pulang: p };
+    });
+
+    const payload = { id: id, nama: nama, jadwal: jadwal };
+
+    fetch(`${API_BASE_URL}/teachers.php`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            closeEditModal();
+            triggerRefresh(); 
+            Swal.fire({ icon: 'success', title: 'Diperbarui!', text: 'Data guru berhasil diupdate.', timer: 2000, showConfirmButton: false });
+        } else { Swal.fire('Error', data.message, 'error'); }
+    });
+}
+
+// FUNGSI BARU: Delete Semua Guru
+export function deleteAllGuru() {
+    if(state.mockTeachers.length === 0) return Swal.fire('Data Kosong', 'Tidak ada data guru untuk dihapus.', 'info');
+
+    Swal.fire({
+        title: 'Hapus SEMUA Guru?',
+        text: "PERINGATAN: Semua data guru beserta riwayat absensinya akan lenyap permanen!",
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus Semua!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Apakah Anda Yakin?',
+                text: "Tindakan ini tidak bisa dibatalkan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Hapus Sekarang'
+            }).then(async (result2) => {
+                if(result2.isConfirmed) {
+                    // Munculkan indikator loading karena proses looping memakan sedikit waktu
+                    Swal.fire({ title: 'Menghapus Data...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); }});
+                    
+                    try {
+                        // Looping semua id guru dan buat request DELETE paralel menggunakan Promise.all
+                        const deletePromises = state.mockTeachers.map(guru => {
+                            return fetch(`${API_BASE_URL}/teachers.php`, {
+                                method: 'DELETE',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id: guru.id }) // <-- Mengirim format {id: angka} yang sesuai dengan backend
+                            }).then(res => res.json());
+                        });
+
+                        // Tunggu sampai semua request selesai
+                        await Promise.all(deletePromises);
+                        
+                        triggerRefresh(); 
+                        Swal.fire('Terhapus!', 'Semua data guru telah dikosongkan.', 'success');
+                    } catch (error) {
+                        Swal.fire('Error', 'Terjadi kesalahan pada jaringan saat menghapus data.', 'error');
+                    }
+                }
+            });
+        }
     });
 }
 
@@ -132,8 +239,15 @@ export function cetakSemuaIDCard() {
 
 export function downloadTemplateGuru() {
     const templateData = [
-        { NIP: "19800101", Nama: "Budi Santoso", Sen_Masuk: "07:00", Sen_Pulang: "14:00", Sel_Masuk: "07:00", Sel_Pulang: "14:00" },
-        { NIP: "19850202", Nama: "Siti Aminah", Sen_Masuk: "08:00", Sen_Pulang: "12:00", Sel_Masuk: "", Sel_Pulang: "" }
+        { 
+            NIP: "MABU-", Nama: "GURU-", 
+            Sen_Masuk: "07:00", Sen_Pulang: "14:00", 
+            Sel_Masuk: "07:00", Sel_Pulang: "14:00",
+            Rab_Masuk: "07:00", Rab_Pulang: "14:00",
+            Kam_Masuk: "07:00", Kam_Pulang: "14:00",
+            Jum_Masuk: "07:00", Jum_Pulang: "14:00",
+            Sab_Masuk: "07:00", Sab_Pulang: "14:00",
+        }
     ];
     const worksheet = XLSX.utils.json_to_sheet(templateData);
     const workbook = XLSX.utils.book_new();

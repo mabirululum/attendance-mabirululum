@@ -42,6 +42,28 @@ else if ($method === 'POST') {
     }
 }
 
+// PUT: Memperbarui Data (Nama & Jadwal)
+else if ($method === 'PUT') {
+    $data = json_decode(file_get_contents("php://input"));
+    
+    if (!isset($data->id) || !isset($data->nama)) {
+        echo json_encode(["status" => "error", "message" => "ID dan Nama tidak boleh kosong!"]);
+        exit;
+    }
+
+    $id = $data->id;
+    $nama = trim($data->nama);
+    $jadwal = isset($data->jadwal) ? json_encode($data->jadwal) : '{}'; 
+
+    try {
+        $stmt = $conn->prepare("UPDATE teachers SET nama = :nama, jadwal = :jadwal WHERE id = :id");
+        $stmt->execute([':nama' => $nama, ':jadwal' => $jadwal, ':id' => $id]);
+        echo json_encode(["status" => "success", "message" => "Data guru berhasil diupdate"]);
+    } catch(PDOException $e) {
+        echo json_encode(["status" => "error", "message" => "Gagal mengupdate: " . $e->getMessage()]);
+    }
+}
+
 // DELETE: Menghapus data guru
 else if ($method === 'DELETE') {
     $data = json_decode(file_get_contents("php://input"));
